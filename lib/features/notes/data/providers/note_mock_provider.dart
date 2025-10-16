@@ -1,5 +1,6 @@
-import '../../../models/note.dart';
+import '../../models/note.dart';
 import 'note_api_provider.dart';
+import '../../../../core/constants/app_constants.dart';
 
 /// Mock implementation of NoteDataProvider that stores notes in memory
 /// Challenges:  Stores Data in Memory
@@ -8,7 +9,7 @@ class NoteMockProvider implements NoteDataProvider {
   int _nextId = 1;
 
   Future<void> _simulateNetworkDelay() async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(AppConstants.mockNetworkDelay);
   }
 
   @override

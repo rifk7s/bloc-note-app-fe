@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/note/note_bloc.dart';
-import '../../bloc/note/note_event.dart';
-import '../../bloc/note/note_state.dart';
+import '../bloc/note_bloc.dart';
+import '../bloc/note_event.dart';
+import '../bloc/note_state.dart';
 import '../../models/note.dart';
 
 /// Uses BLoC - dispatches events, listens to states
-class AddNoteScreen extends StatefulWidget {
-  const AddNoteScreen({super.key});
+class AddNotePage extends StatefulWidget {
+  const AddNotePage({super.key});
 
   @override
-  State<AddNoteScreen> createState() => _AddNoteScreenState();
+  State<AddNotePage> createState() => _AddNotePageState();
 }
 
-class _AddNoteScreenState extends State<AddNoteScreen> {
+class _AddNotePageState extends State<AddNotePage> {
   late final TextEditingController _titleController;
   late final TextEditingController _bodyController;
   final _formKey = GlobalKey<FormState>();
@@ -36,7 +36,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
   Widget build(BuildContext context) {
     return BlocListener<NoteBloc, NoteState>(
       listener: (context, state) {
-        if (state is NoteOperationSuccess) {
+        if (state.status == NoteStatus.success) {
           Navigator.pop(context);
         }
       },
@@ -46,7 +46,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
         ),
         body: BlocBuilder<NoteBloc, NoteState>(
           builder: (context, state) {
-            final isLoading = state is NoteOperationInProgress;
+            final isLoading = state.status == NoteStatus.loading;
 
             return Padding(
               padding: const EdgeInsets.all(16.0),
@@ -96,7 +96,8 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                             )
                           : const Text('Add Note'),
                     ),
-                    if (state is NoteError) ...[
+                    if (state.status == NoteStatus.error &&
+                        state.errorMessage != null) ...[
                       const SizedBox(height: 16),
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -105,7 +106,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          state.message,
+                          state.errorMessage!,
                           style: const TextStyle(color: Colors.red),
                         ),
                       ),

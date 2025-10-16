@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/note/note_bloc.dart';
-import '../../bloc/note/note_event.dart';
-import '../../bloc/note/note_state.dart';
+import '../bloc/note_bloc.dart';
+import '../bloc/note_event.dart';
+import '../bloc/note_state.dart';
 import '../../models/note.dart';
 
 /// Uses BLoC - dispatches events, listens to states
-class UpdateNoteScreen extends StatefulWidget {
+class UpdateNotePage extends StatefulWidget {
   final Note note;
 
-  const UpdateNoteScreen({
+  const UpdateNotePage({
     super.key,
     required this.note,
   });
 
   @override
-  State<UpdateNoteScreen> createState() => _UpdateNoteScreenState();
+  State<UpdateNotePage> createState() => _UpdateNotePageState();
 }
 
-class _UpdateNoteScreenState extends State<UpdateNoteScreen> {
+class _UpdateNotePageState extends State<UpdateNotePage> {
   late final TextEditingController _titleController;
   late final TextEditingController _bodyController;
   final _formKey = GlobalKey<FormState>();
@@ -41,7 +41,7 @@ class _UpdateNoteScreenState extends State<UpdateNoteScreen> {
   Widget build(BuildContext context) {
     return BlocListener<NoteBloc, NoteState>(
       listener: (context, state) {
-        if (state is NoteOperationSuccess) {
+        if (state.status == NoteStatus.success) {
           Navigator.pop(context);
         }
       },
@@ -51,7 +51,7 @@ class _UpdateNoteScreenState extends State<UpdateNoteScreen> {
         ),
         body: BlocBuilder<NoteBloc, NoteState>(
           builder: (context, state) {
-            final isLoading = state is NoteOperationInProgress;
+            final isLoading = state.status == NoteStatus.loading;
 
             return Padding(
               padding: const EdgeInsets.all(16.0),
@@ -101,7 +101,8 @@ class _UpdateNoteScreenState extends State<UpdateNoteScreen> {
                             )
                           : const Text('Save'),
                     ),
-                    if (state is NoteError) ...[
+                    if (state.status == NoteStatus.error &&
+                        state.errorMessage != null) ...[
                       const SizedBox(height: 16),
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -110,7 +111,7 @@ class _UpdateNoteScreenState extends State<UpdateNoteScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          state.message,
+                          state.errorMessage!,
                           style: const TextStyle(color: Colors.red),
                         ),
                       ),
