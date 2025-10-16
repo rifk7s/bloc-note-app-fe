@@ -1,31 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/note/note_bloc.dart';
-import '../../bloc/note/note_event.dart';
-import '../../bloc/note/note_state.dart';
-import 'note_detail_screen.dart';
-import 'add_note_screen.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../bloc/note_bloc.dart';
+import '../bloc/note_event.dart';
+import '../bloc/note_state.dart';
+import 'note_detail_page.dart';
+import 'add_note_page.dart';
 
 /// Uses BLoC for state management - NO setState, NO HTTP calls
-class NoteListScreen extends StatelessWidget {
-  const NoteListScreen({super.key});
+class NoteListPage extends StatelessWidget {
+  const NoteListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<NoteBloc, NoteState>(
       listener: (context, state) {
-        if (state is NoteError) {
+        if (state.status == NoteStatus.error && state.errorMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message),
+              content: Text(state.errorMessage!),
               backgroundColor: Colors.red,
             ),
           );
         }
-        if (state is NoteOperationSuccess) {
+        if (state.status == NoteStatus.success &&
+            state.successMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message ?? 'Operation successful'),
+              content: Text(state.successMessage!),
               backgroundColor: Colors.green,
             ),
           );
@@ -43,7 +45,7 @@ class NoteListScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const AddNoteScreen(),
+                  builder: (context) => const AddNotePage(),
                 ),
               );
             },
@@ -55,7 +57,7 @@ class NoteListScreen extends StatelessWidget {
   }
 
   List<Widget> _buildAppBarActions(BuildContext context, NoteState state) {
-    if (state is! NoteLoaded) return [];
+    if (state.status != NoteStatus.loaded) return [];
 
     if (!state.isSelectionMode) {
       // Normal mode - show select all button
@@ -63,7 +65,7 @@ class NoteListScreen extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.select_all),
           onPressed: () {
-            context.read<NoteBloc>().add(const AllNotesSelected());
+            context.read<NoteBloc>().add(AllNotesSelected());
           },
         ),
       ];
@@ -81,7 +83,7 @@ class NoteListScreen extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {
-            context.read<NoteBloc>().add(const AllNotesDeselected());
+            context.read<NoteBloc>().add(AllNotesDeselected());
           },
         ),
       ];
@@ -90,53 +92,40 @@ class NoteListScreen extends StatelessWidget {
 
   /// Build body based on state
   Widget _buildBody(BuildContext context, NoteState state) {
-    if (state is NoteInitial) {
+    if (state.status == NoteStatus.initial) {
       // Initial state - load notes
-      context.read<NoteBloc>().add(const NoteStarted());
+      context.read<NoteBloc>().add(NoteStarted());
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (state is NoteLoading) {
+    if (state.status == NoteStatus.loading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (state is NoteOperationInProgress) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircularProgressIndicator(),
-            const SizedBox(height: 16),
-            Text(state.message ?? 'Processing...'),
-          ],
-        ),
-      );
-    }
-
-    if (state is NoteError) {
+    if (state.status == NoteStatus.error) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            Text(state.message),
+            Text(state.errorMessage ?? 'An error occurred'),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                context.read<NoteBloc>().add(const NoteStarted());
+                context.read<NoteBloc>().add(NoteStarted());
               },
-              child: const Text('Retry'),
+              child: const Text(AppStrings.retry),
             ),
           ],
         ),
       );
     }
 
-    if (state is NoteLoaded) {
+    if (state.status == NoteStatus.loaded) {
       if (state.notes.isEmpty) {
         return const Center(
-          child: Text('No notes yet. Add one!'),
+          child: Text(AppStrings.noNotesFound),
         );
       }
 
@@ -180,7 +169,7 @@ class NoteListScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => NoteDetailScreen(note: note),
+                    builder: (context) => NoteDetailPage(note: note),
                   ),
                 );
               }
@@ -203,27 +192,26 @@ class NoteListScreen extends StatelessWidget {
   void _showDeleteConfirmation(BuildContext context) {
     final bloc = context.read<NoteBloc>();
     final state = bloc.state;
-    if (state is! NoteLoaded) return;
 
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete Notes'),
+        title: const Text(AppStrings.delete),
         content: Text(
           'Are you sure you want to delete ${state.selectedNotes.length} note(s)?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
+            child: const Text(AppStrings.cancel),
           ),
           TextButton(
             onPressed: () {
-              bloc.add(const SelectedNotesDeleted());
+              bloc.add(SelectedNotesDeleted());
               Navigator.pop(dialogContext);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: const Text(AppStrings.delete),
           ),
         ],
       ),

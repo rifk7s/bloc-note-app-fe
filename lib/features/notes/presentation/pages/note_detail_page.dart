@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../models/note.dart';
-import 'update_note_screen.dart';
+import 'update_note_page.dart';
 
 /// Simple display screen - no BLoC needed here
-class NoteDetailScreen extends StatelessWidget {
+class NoteDetailPage extends StatelessWidget {
   final Note note;
 
-  const NoteDetailScreen({
+  const NoteDetailPage({
     super.key,
     required this.note,
   });
@@ -23,7 +23,7 @@ class NoteDetailScreen extends StatelessWidget {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => UpdateNoteScreen(note: note),
+                  builder: (context) => UpdateNotePage(note: note),
                 ),
               );
             },

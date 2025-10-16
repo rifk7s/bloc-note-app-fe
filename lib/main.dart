@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'data/repositories/note_repository.dart';
-import 'data/providers/note_mock_provider.dart'; // Mock provider - no backend needed!
-import 'bloc/note/note_bloc.dart';
-import 'presentation/screens/note_list_screen.dart';
+import 'core/constants/app_constants.dart';
+import 'features/notes/data/repositories/note_repository.dart';
+import 'features/notes/data/providers/note_mock_provider.dart';
+import 'features/notes/presentation/bloc/note_bloc.dart';
+import 'features/notes/presentation/pages/note_list_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,19 +16,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RepositoryProvider(
-      // Using mock provider - works without backend!
+      // Currently using mock provider - works without backend!
+      // More at lib/features/notes/data/providers
       create: (context) => NoteRepository(dataProvider: NoteMockProvider()),
       child: BlocProvider(
         create: (context) => NoteBloc(
           repository: context.read<NoteRepository>(),
         ),
         child: MaterialApp(
-          title: 'Note Taking App',
+          title: AppStrings.appTitle,
           theme: ThemeData(
             primarySwatch: Colors.blue,
             useMaterial3: true,
           ),
-          home: const NoteListScreen(),
+          home: const NoteListPage(),
         ),
       ),
     );

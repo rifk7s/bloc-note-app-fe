@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../models/note.dart';
+import '../../../../core/constants/app_constants.dart';
 
 /// Data Provider for Note API
 /// Handles all HTTP communication with the backend
@@ -17,9 +18,10 @@ class NoteApiProvider implements NoteDataProvider {
   final http.Client httpClient;
 
   NoteApiProvider({
-    this.baseUrl = 'http://localhost:8080',
+    String? baseUrl,
     http.Client? httpClient,
-  }) : httpClient = httpClient ?? http.Client();
+  })  : baseUrl = baseUrl ?? AppConstants.apiBaseUrl,
+        httpClient = httpClient ?? http.Client();
 
   @override
   Future<List<Note>> getNotes() async {

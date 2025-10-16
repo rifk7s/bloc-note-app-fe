@@ -1,8 +1,6 @@
-import 'package:equatable/equatable.dart';
-
 /// Note model - Domain entity
 /// Represents a note in the application
-class Note extends Equatable {
+class Note {
   final int? id;
   final String title;
   final String body;
@@ -60,7 +58,18 @@ class Note extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, title, body, createdAt, updatedAt];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Note &&
+        other.id == id &&
+        other.title == title &&
+        other.body == body;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(id, title, body);
+  }
 
   @override
   String toString() {
